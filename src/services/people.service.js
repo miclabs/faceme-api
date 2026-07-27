@@ -2,7 +2,8 @@
 
 const FormData = require("form-data");
 const FaceMeService = require("./faceme.service");
-const { savePerson } = require("./personStore");
+const { savePerson, getPeople } = require("./personStore");
+const authService = require("./auth.service");
 
 class PeopleService {
   async importPerson({
@@ -69,6 +70,57 @@ class PeopleService {
     }
 
     return response;
+  }
+
+  async listPeople({
+    authorization,
+    deviceId,
+    page = 1,
+    perPage = 20
+  }) {
+
+    const people = await getPeople();
+
+    const start = (page - 1) * perPage;
+    const pagedPeople = people.slice(start, start + perPage);
+
+    const baseUrl = authService.getBaseUrl(authorization, deviceId);
+
+    const data = await Promise.all(
+      pagedPeople.map(async (person) => {
+        try {
+          const response = await FaceMeService.postForm(
+            "/api/website/person/query",
+            {
+              personId: person
+            },
+            {
+              authorization,
+              deviceId
+            }
+          );
+
+          return {
+            name: response.name,
+            coverImageUrl: `${baseUrl}${response.coverImageUrl}`,
+            visitedCount: response.visitedCount
+          };
+        } catch (error) {
+          return {
+            personId: person.personId,
+            error: error.message
+          };
+        }
+      })
+    );
+
+    return {
+      page,
+      perPage,
+      total: people.length,
+      totalPages: Math.ceil(people.length / perPage),
+      data
+    };
   }
 }
 

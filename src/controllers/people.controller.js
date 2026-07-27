@@ -38,3 +38,18 @@ exports.importPerson = async (req, res) => {
     });
   }
 };
+
+exports.listPeople = async (req, res, next) => {
+  try {
+    const result = await peopleService.listPeople({
+      authorization: req.headers.authorization,
+      deviceId: req.query.device_id,
+      page: Number(req.query.page || 1),
+      perPage: Number(req.query.per_page || 20),
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

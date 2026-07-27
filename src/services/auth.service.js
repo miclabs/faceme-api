@@ -36,6 +36,11 @@ class AuthService {
     this.password = data.password?.trim() || process.env.FACEME_PASSWORD;
   }
 
+  getBaseUrl(authorization, deviceId) {
+    this.loadConfig(deviceId, authorization)
+    return this.baseUrl;
+  }
+
   async getToken(options) {
     if (this.token && !this.isExpired()) {
       return this.token;

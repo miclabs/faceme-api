@@ -11,8 +11,19 @@ class FaceMeService {
     });
   }
 
-  async postForm(url, data = {}) {
-    return this.request(async (token) => {
+  async post(url, data = {}, options = {}) {
+    return this.request(options, async (token) => {
+      return this.client.post(url, data, {
+        headers: {
+          Authorization: token,
+          "Content-Type": "application/json"
+        }
+      });
+    });
+  }
+
+  async postForm(url, data = {}, options = {}) {
+    return this.request(options, async (token) => {
       return this.client.post(
         url,
         new URLSearchParams(data).toString(),

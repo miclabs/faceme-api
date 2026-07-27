@@ -24,4 +24,6 @@ router.post(
   controller.importPerson
 );
 
+router.get("/people", controller.listPeople);
+
 module.exports = router;

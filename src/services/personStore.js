@@ -6,9 +6,6 @@ const PEOPLE_FILE = path.join(__dirname, "..", "store", "people.json");
 async function savePerson(personId) {
   let people = [];
 
-  console.log('====')
-  console.log(personId)
-
   try {
     const data = await fs.readFile(PEOPLE_FILE, "utf8");
     people = JSON.parse(data);
@@ -34,6 +31,26 @@ async function savePerson(personId) {
   return personId;
 }
 
+async function getPeople() {
+  try {
+    const data = await fs.readFile(PEOPLE_FILE, "utf8");
+
+    if (!data.trim()) {
+      return [];
+    }
+
+    return JSON.parse(data);
+  } catch (error) {
+    // File doesn't exist
+    if (error.code === "ENOENT") {
+      return [];
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   savePerson,
+  getPeople
 };
