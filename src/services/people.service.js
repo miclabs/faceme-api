@@ -2,6 +2,7 @@
 
 const FormData = require("form-data");
 const FaceMeService = require("./faceme.service");
+const { savePerson } = require("./personStore");
 
 class PeopleService {
   async importPerson({
@@ -51,11 +52,23 @@ class PeopleService {
       );
     });
 
-    return FaceMeService.postMultipart(
+    const response = await FaceMeService.postMultipart(
       "/api/website/person/import",
       form,
-      { authorization: authorization, deviceId: deviceId }
+      {
+        authorization,
+        deviceId,
+      }
     );
+
+    if (response.operation == 'CREATE') {
+      const personId = response.personId;
+
+      // Save personId to JSON or database
+      await savePerson(personId);
+    }
+
+    return response;
   }
 }
 
