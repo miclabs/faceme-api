@@ -12,7 +12,9 @@ exports.importPerson = async (req, res) => {
       note: req.body.note,
       groupId: req.body.group_id || DEFAULT_GROUP_ID,
       coverImage: req.files?.cover_image?.[0] || null,
-      snapshots: req.files?.snapshots || []
+      snapshots: req.files?.snapshots || [],
+      deviceId: req.body.device_id,
+      authorization: req.headers.authorization
     });
 
     return res.json({

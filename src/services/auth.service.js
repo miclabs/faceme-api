@@ -5,19 +5,43 @@ const qs = require("querystring");
 
 class AuthService {
   constructor() {
-    this.baseUrl = process.env.FACEME_URL;
-    this.account = process.env.FACEME_ACCOUNT;
-    this.password = process.env.FACEME_PASSWORD;
+    this.baseUrl = null;
+    this.account = null;
+    this.password = null;
 
     this.token = null;
     this.expirationDate = null;
   }
 
-  async getToken() {
+  async loadConfig(deviceId, authorization) {
+    const { data } = await axios.get(
+      `https://driveoffalert.com/api/fma/config`,
+      {
+        params: {
+          device_id: deviceId,
+        },
+        headers: {
+          Authorization: authorization,
+        },
+      }
+    );
+
+    const ip = data.ip?.trim();
+
+    this.baseUrl = ip
+      ? `http://${ip}`
+      : process.env.FACEME_URL;
+
+    this.account = data.username?.trim() || process.env.FACEME_ACCOUNT;
+    this.password = data.password?.trim() || process.env.FACEME_PASSWORD;
+  }
+
+  async getToken(options) {
     if (this.token && !this.isExpired()) {
       return this.token;
     }
 
+    await this.loadConfig(options.deviceId, options.authorization)
     return this.login();
   }
 

@@ -26,8 +26,8 @@ class FaceMeService {
     });
   }
 
-  async postMultipart(url, formData) {
-    return this.request(async (token) => {
+  async postMultipart(url, formData, options={}) {
+    return this.request(options, async (token) => {
       return this.client.post(
         url,
         formData,
@@ -43,9 +43,9 @@ class FaceMeService {
     });
   }
 
-  async request(callback) {
+  async request(options={}, callback) {
     try {
-      const token = await authService.getToken();
+      const token = await authService.getToken(options);
       const response = await callback(token);
 
       return response.data;
@@ -53,7 +53,7 @@ class FaceMeService {
       if (error.response?.status === 401) {
         authService.clearToken();
 
-        const token = await authService.getToken();
+        const token = await authService.getToken(options);
         const response = await callback(token);
 
         return response.data;

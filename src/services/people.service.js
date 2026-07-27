@@ -10,13 +10,15 @@ class PeopleService {
     note,
     groupId,
     coverImage,
-    snapshots
+    snapshots,
+    authorization,
+    deviceId
   }) {
     const form = new FormData();
 
     form.append("name", name);
     form.append("employeeId", employeeId || "");
-    form.append("groupId", groupId || 1);
+    form.append("groupId", 2);
     form.append("note", note || "");
 
     // Match the working curl request
@@ -51,7 +53,8 @@ class PeopleService {
 
     return FaceMeService.postMultipart(
       "/api/website/person/import",
-      form
+      form,
+      { authorization: authorization, deviceId: deviceId }
     );
   }
 }
