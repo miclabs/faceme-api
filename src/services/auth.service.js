@@ -37,7 +37,6 @@ class AuthService {
   }
 
   getBaseUrl(authorization, deviceId) {
-    this.loadConfig(deviceId, authorization)
     return this.baseUrl;
   }
 

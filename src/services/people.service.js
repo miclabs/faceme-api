@@ -4,6 +4,7 @@ const FormData = require("form-data");
 const FaceMeService = require("./faceme.service");
 const { savePerson, getPeople } = require("./personStore");
 const authService = require("./auth.service");
+const ImageService = require('./image.service')
 
 class PeopleService {
   async importPerson({
@@ -66,7 +67,7 @@ class PeopleService {
       const personId = response.personId;
 
       // Save personId to JSON or database
-      await savePerson(personId);
+      await savePerson(deviceId, personId);
     }
 
     return response;
@@ -78,13 +79,13 @@ class PeopleService {
     page = 1,
     perPage = 20
   }) {
-
-    const people = await getPeople();
+    const people = await getPeople(deviceId);
 
     const start = (page - 1) * perPage;
     const pagedPeople = people.slice(start, start + perPage);
 
-    const baseUrl = authService.getBaseUrl(authorization, deviceId);
+    await authService.loadConfig(deviceId, authorization);
+    const baseUrl = authService.getBaseUrl();
 
     const data = await Promise.all(
       pagedPeople.map(async (person) => {
@@ -100,9 +101,20 @@ class PeopleService {
             }
           );
 
+          let coverImageUrl = null;
+
+          if (response.coverImageUrl) {
+            coverImageUrl = await ImageService.cacheImage(
+              `${baseUrl}${response.coverImageUrl}`,
+              response.personId,
+              deviceId
+            );
+          }
+
           return {
+            id: response.personId,
             name: response.name,
-            coverImageUrl: `${baseUrl}${response.coverImageUrl}`,
+            coverImageUrl: coverImageUrl,
             visitedCount: response.visitedCount
           };
         } catch (error) {

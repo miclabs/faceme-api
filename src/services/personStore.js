@@ -1,47 +1,54 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const PEOPLE_FILE = path.join(__dirname, "..", "store", "people.json");
+function getPeopleFile(deviceId) {
+  return path.join(
+    __dirname,
+    "..",
+    "store",
+    String(deviceId),
+    "people.json"
+  );
+}
 
-async function savePerson(personId) {
+async function savePerson(deviceId, personId) {
+  const peopleFile = getPeopleFile(deviceId);
+
+  await fs.mkdir(path.dirname(peopleFile), {
+    recursive: true
+  });
+
   let people = [];
 
   try {
-    const data = await fs.readFile(PEOPLE_FILE, "utf8");
-    people = JSON.parse(data);
-  } catch (err) {
-    // File doesn't exist or is invalid; start with an empty array
-    people = [];
+    const data = await fs.readFile(peopleFile, "utf8");
+    people = data.trim() ? JSON.parse(data) : [];
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
   }
 
-  // Avoid duplicates
-  const existing = people.find(
-    p => p === personId
-  );
-
-  if (!existing) {
+  if (!people.includes(personId)) {
     people.push(personId);
 
     await fs.writeFile(
-      PEOPLE_FILE,
-      JSON.stringify(people, null, 2)
+      peopleFile,
+      JSON.stringify(people, null, 2),
+      "utf8"
     );
   }
 
   return personId;
 }
 
-async function getPeople() {
+async function getPeople(deviceId) {
+  const peopleFile = getPeopleFile(deviceId);
+
   try {
-    const data = await fs.readFile(PEOPLE_FILE, "utf8");
-
-    if (!data.trim()) {
-      return [];
-    }
-
-    return JSON.parse(data);
+    const data = await fs.readFile(peopleFile, "utf8");
+    return data.trim() ? JSON.parse(data) : [];
   } catch (error) {
-    // File doesn't exist
     if (error.code === "ENOENT") {
       return [];
     }
