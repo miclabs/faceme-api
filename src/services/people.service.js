@@ -2,7 +2,7 @@
 
 const FormData = require("form-data");
 const FaceMeService = require("./faceme.service");
-const { savePerson, getPeople } = require("./personStore");
+const { savePerson, getPeople, removePerson } = require("./personStore");
 const authService = require("./auth.service");
 const ImageService = require('./image.service')
 
@@ -118,21 +118,99 @@ class PeopleService {
             visitedCount: response.visitedCount
           };
         } catch (error) {
-          return {
-            personId: person.personId,
-            error: error.message
-          };
+          console.error(`Failed to load person ${person}:`, error.message);
+          return null;
         }
       })
     );
 
+    const filteredData = data.filter(item => item !== null)
+
     return {
       page,
       perPage,
-      total: people.length,
-      totalPages: Math.ceil(people.length / perPage),
-      data
+      total: filteredData.length,
+      totalPages: Math.ceil(filteredData.length / perPage),
+      data: filteredData
     };
+  }
+
+  async updatePerson({
+    personId,
+    name,
+    employeeId,
+    note,
+    groupId,
+    coverImage,
+    snapshots,
+    authorization,
+    deviceId
+  }) {
+    const form = new FormData();
+
+    form.append("personId", personId);
+    form.append("name", name || "");
+    form.append("employeeId", employeeId || "");
+    form.append("groupId", groupId || 2);
+    form.append("note", note || "");
+
+    if (coverImage) {
+      form.append("coverImage", coverImage.buffer, {
+        filename: coverImage.originalname,
+        contentType: coverImage.mimetype
+      });
+    }
+
+    console.log('===snapshots')
+    console.log(snapshots)
+
+    snapshots.forEach(snapshot => {
+      form.append("snapshot", snapshot.buffer, {
+        filename: snapshot.originalname,
+        contentType: snapshot.mimetype
+      });
+    });
+
+    let result = FaceMeService.postMultipart(
+      "/api/website/person/update",
+      form,
+      {
+        authorization,
+        deviceId
+      }
+    );
+
+    return result;
+  }
+
+  async deletePerson({
+    personId,
+    authorization,
+    deviceId
+  }) {
+    try {
+      const response = await FaceMeService.postForm(
+        "/api/website/person/delete",
+        {
+          personId
+        },
+        {
+          authorization,
+          deviceId
+        }
+      );
+
+      await removePerson(deviceId, Number(personId));
+
+      return response;
+    } catch (error) {
+      console.error(
+        `Failed to delete person ${personId}:`,
+        error.message
+      );
+
+      return JSON.parse(error.message)
+    }
   }
 }
 

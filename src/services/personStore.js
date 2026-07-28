@@ -11,6 +11,20 @@ function getPeopleFile(deviceId) {
   );
 }
 
+async function removePerson(deviceId, personId) {
+  const people = await getPeople(deviceId);
+
+  const updated = people.filter(id => id !== Number(personId));
+
+  const peopleFile = getPeopleFile(deviceId);
+
+  await fs.writeFile(
+    peopleFile,
+    JSON.stringify(updated, null, 2),
+    "utf8"
+  );
+}
+
 async function savePerson(deviceId, personId) {
   const peopleFile = getPeopleFile(deviceId);
 
@@ -59,5 +73,6 @@ async function getPeople(deviceId) {
 
 module.exports = {
   savePerson,
-  getPeople
+  getPeople,
+  removePerson
 };

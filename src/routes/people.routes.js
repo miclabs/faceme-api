@@ -26,4 +26,18 @@ router.post(
 
 router.get("/people", controller.listPeople);
 
+router.put(
+  "/people/:personId",
+  upload.fields([
+    { name: "cover_image", maxCount: 1 },
+    { name: "snapshots", maxCount: 5 }
+  ]),
+  controller.updatePerson
+);
+
+router.delete(
+  "/people/:personId",
+  controller.deletePerson
+);
+
 module.exports = router;

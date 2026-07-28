@@ -13,10 +13,10 @@ class ImageService {
     const filePath = path.join(folder, filename);
 
     // Already downloaded
-    try {
-      await fs.access(filePath);
-      return `${process.env.BASE_URL}/faceme/${deviceId}/${filename}`;
-    } catch (_) {}
+    // try {
+    //   await fs.access(filePath);
+    //   return `${process.env.BASE_URL}/faceme/${deviceId}/${filename}`;
+    // } catch (_) {}
 
     const response = await axios.get(url, {
       responseType: "arraybuffer"
