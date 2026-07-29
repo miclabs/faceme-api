@@ -21,7 +21,7 @@ class AuthService {
           device_id: deviceId || 372,
         },
         headers: {
-          Authorization: authorization,
+          Authorization: authorization || 'Token token=87a1a2da53a07abecc402c0a77ee1172',
         },
       }
     );
