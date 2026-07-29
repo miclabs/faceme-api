@@ -161,9 +161,6 @@ class PeopleService {
       });
     }
 
-    console.log('===snapshots')
-    console.log(snapshots)
-
     snapshots.forEach(snapshot => {
       form.append("snapshot", snapshot.buffer, {
         filename: snapshot.originalname,

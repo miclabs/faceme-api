@@ -18,7 +18,7 @@ class AuthService {
       `https://driveoffalert.com/api/fma/config`,
       {
         params: {
-          device_id: deviceId,
+          device_id: deviceId || 372,
         },
         headers: {
           Authorization: authorization,
