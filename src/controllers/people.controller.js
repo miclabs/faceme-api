@@ -13,7 +13,7 @@ exports.importPerson = async (req, res) => {
       groupId: req.body.group_id || DEFAULT_GROUP_ID,
       coverImage: req.files?.cover_image?.[0] || null,
       snapshots: req.files?.snapshots || [],
-      deviceId: req.body.device_id,
+      deviceId: req.headers.deviceid,
       authorization: req.headers.authorization
     });
 
@@ -36,5 +36,53 @@ exports.importPerson = async (req, res) => {
       status: false,
       error: errorBody
     });
+  }
+};
+
+exports.listPeople = async (req, res, next) => {
+  try {
+    const result = await peopleService.listPeople({
+      authorization: req.headers.authorization,
+      deviceId: req.headers.deviceid,
+      page: Number(req.query.page || 1),
+      perPage: Number(req.query.per_page || 20),
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updatePerson = async (req, res, next) => {
+  console.log(req.headers)
+
+  try {
+    const result = await peopleService.updatePerson({
+      personId: req.params.personId,
+      ...req.body,
+      coverImage: req.files?.cover_image?.[0],
+      snapshots: req.files?.snapshots || [],
+      authorization: req.headers.authorization,
+      deviceId: req.headers.deviceid
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deletePerson = async (req, res, next) => {
+  try {
+    const result = await peopleService.deletePerson({
+      personId: req.params.personId,
+      authorization: req.headers.authorization,
+      deviceId: req.headers.deviceid
+    });
+
+    res.json(result);
+  } catch (error) {
+    next(error);
   }
 };

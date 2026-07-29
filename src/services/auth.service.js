@@ -18,10 +18,10 @@ class AuthService {
       `https://driveoffalert.com/api/fma/config`,
       {
         params: {
-          device_id: deviceId,
+          device_id: deviceId || 372,
         },
         headers: {
-          Authorization: authorization,
+          Authorization: authorization || 'Token token=87a1a2da53a07abecc402c0a77ee1172',
         },
       }
     );
@@ -34,6 +34,10 @@ class AuthService {
 
     this.account = data.username?.trim() || process.env.FACEME_ACCOUNT;
     this.password = data.password?.trim() || process.env.FACEME_PASSWORD;
+  }
+
+  getBaseUrl(authorization, deviceId) {
+    return this.baseUrl;
   }
 
   async getToken(options) {
