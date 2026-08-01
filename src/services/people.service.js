@@ -28,7 +28,7 @@ class PeopleService {
     form.append("forceImport", "false");
     form.append("skipQC", "false");
     form.append("accessPeriod", "");
-    form.append("information", "");
+    form.append("information", JSON.stringify({ note: note }));
 
     if (coverImage) {
       form.append(
@@ -88,13 +88,11 @@ class PeopleService {
     const baseUrl = authService.getBaseUrl();
 
     const data = await Promise.all(
-      pagedPeople.map(async (person) => {
+      pagedPeople.map(async (personId) => {
         try {
           const response = await FaceMeService.postForm(
             "/api/website/person/query",
-            {
-              personId: person
-            },
+            { personId },
             {
               authorization,
               deviceId
@@ -111,14 +109,38 @@ class PeopleService {
             );
           }
 
+          const faces = await Promise.all(
+            (response.faces || []).map(async (face) => {
+              let snapshotUrl = null;
+
+              if (face.snapshotUrl) {
+                snapshotUrl = await ImageService.cacheImage(
+                  `${baseUrl}${face.snapshotUrl}`,
+                  `${response.personId}_${face.faceId}`,
+                  deviceId
+                );
+              }
+
+              return {
+                faceId: face.faceId,
+                isSelected: face.isSelected,
+                snapshotUrl
+              };
+            })
+          );
+
+          console.log(response)
+
           return {
             id: response.personId,
             name: response.name,
-            coverImageUrl: coverImageUrl,
-            visitedCount: response.visitedCount
+            coverImageUrl,
+            faces,
+            visitedCount: response.visitedCount,
+            note: response.information?.note
           };
         } catch (error) {
-          console.error(`Failed to load person ${person}:`, error.message);
+          console.error(`Failed to load person ${personId}:`, error.message);
           return null;
         }
       })
